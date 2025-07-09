@@ -3,11 +3,12 @@ import { Request, Response } from 'express'
 import { RegisterDto } from '../../domain/dtos/auth/register.dto'
 import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { CustomError } from '../../domain/errors/custom.error'
+import { UserModel } from '../../data/mongodb/models/user.model'
 
 export class AuthController {
   constructor(private readonly authRepository: AuthRepository) {}
 
-  private handleError(error: unknown, res: Response) {
+  private handleError = (error: unknown, res: Response) => {
     if (error instanceof CustomError) return res.status(error.statusCode).json({ error: error.message })
     return res.status(500).json({ message: 'Internal Server Error', error })
   }
@@ -26,5 +27,9 @@ export class AuthController {
       .register(registerDto!)
       .then((user) => res.json(user))
       .catch((error) => this.handleError(error, res))
+  }
+
+  getUsers = (req: Request, res: Response) => {
+    UserModel.find().then((users) => res.json(users))
   }
 }
