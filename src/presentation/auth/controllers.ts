@@ -4,6 +4,9 @@ import { RegisterDto } from '../../domain/dtos/auth/register.dto'
 import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { CustomError } from '../../domain/errors/custom.error'
 import { UserModel } from '../../data/mongodb/models/user.model'
+import { RegisterUseCase } from '../../domain/use-cases/auth/register.use-case'
+import { LoginDto } from '../../domain/dtos/auth/login.dto'
+import { LoginUseCase } from '../../domain/use-cases/auth/login.use-case'
 
 export class AuthController {
   constructor(private readonly authRepository: AuthRepository) {}
@@ -14,7 +17,15 @@ export class AuthController {
   }
 
   login = (req: Request, res: Response) => {
-    res.json(req.body)
+    const [error, loginDto] = LoginDto.create(req.body)
+    if (error) {
+      res.status(400).json({ error })
+      return
+    }
+    new LoginUseCase(this.authRepository)
+      .execute(loginDto!)
+      .then((data) => res.json(data))
+      .catch((error) => this.handleError(error, res))
   }
 
   register = (req: Request, res: Response) => {
@@ -23,9 +34,9 @@ export class AuthController {
       res.status(400).json({ error })
       return
     }
-    this.authRepository
-      .register(registerDto!)
-      .then((user) => res.json(user))
+    new RegisterUseCase(this.authRepository)
+      .execute(registerDto!)
+      .then((data) => res.json(data))
       .catch((error) => this.handleError(error, res))
   }
 

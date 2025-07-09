@@ -29,11 +29,11 @@ export class AuthMiddleware {
         res.status(400).json({ message: 'User not found' })
         return
       }
-
-      req.body.user = user
+      ;(req as any).user = user
       next()
     } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error', error })
+      console.error(error)
+      res.status(500).json({ error: 'Internal Server Error' })
     }
   }
 }
